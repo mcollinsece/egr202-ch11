@@ -2,45 +2,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <unistd.h> // For STDIN_FILENO, STDOUT_FILENO, dup, dup2, and close
 using namespace std;
 
-// Function to check for void functions in the source code
-void checkForVoidFunction(const string& filename) {
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cerr << "Could not open the file!" << endl;
-        exit(-1);
-    }
-
-    string line;
-    bool voidFunctionFound = false;
-    while (getline(file, line)) {
-        if (line.find("void ") != string::npos) {
-            voidFunctionFound = true;
-            break;
-        }
-    }
-
-    file.close();
-
-    if (!voidFunctionFound) {
-        cerr << "Test Failed: No void function found in the source code" << endl;
-        exit(-1);
-    }
-
-    cout << "Void function check passed!" << endl;
-}
-
 void runTest() {
     // Test case 1
-    string input1 = "25000\n3000\n3.5\n4.0\n5\n";
-    string expected_output1 = "Credit union payment: $382.89\nDealer payment: $460.41\n";
+    string input1 = "14.5\n15.7\n15.3\n13.1\n14.2\n";
+    string expected_output1 = "14.6";
+    string expected_output2 = "13.1";
 
     // Helper function to run a single test case
-    auto runSingleTest = [](const string& input, const string& expected_output) {
+    auto runSingleTest = [](const string& input, const string& expected_output1, const string& expected_output2) {
         // Create temporary files for input and output redirection
         FILE *input_file = tmpfile();
         FILE *output_file = tmpfile();
@@ -60,7 +33,7 @@ void runTest() {
         dup2(output_fd, STDOUT_FILENO);
 
         // Call the original program's main function
-        int result = system("./lab9-2");
+        int result = system("./lab11-2");
 
         // Restore stdin and stdout
         dup2(saved_stdin_fd, STDIN_FILENO);
@@ -87,12 +60,14 @@ void runTest() {
         fclose(output_file);
 
         // Debugging information
-        cout << "Expected Output:\n" << expected_output << endl;
+        cout << "Expected Output 1:\n" << expected_output1 << endl;
+        cout << "Expected Output 2:\n" << expected_output2 << endl;
         cout << "Actual Output:\n" << actual_output << endl;
 
-        // Compare the actual output to the expected value
-        if (actual_output.find(expected_output) == string::npos) {
-            cout << "Test Failed: Output does not contain expected value" << endl;
+        // Compare the actual output to the expected values
+        if (actual_output.find(expected_output1) == string::npos || 
+            actual_output.find(expected_output2) == string::npos) {
+            cout << "Test Failed: Output does not contain expected values" << endl;
             exit(-1);
         }
 
@@ -100,13 +75,11 @@ void runTest() {
     };
 
     // Run the individual test cases
-    runSingleTest(input1, expected_output1);
+    runSingleTest(input1, expected_output1, expected_output2);
 }
 
 int main() {
     try {
-        // Check for the presence of void functions in the source code
-        checkForVoidFunction("lab9-2.cpp"); // Replace with the actual filename of your source code
         runTest();
     } catch (const exception &e) {
         cout << "Test Failed: " << e.what() << endl;
